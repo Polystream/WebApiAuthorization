@@ -6,6 +6,7 @@ using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Microsoft.OData.UriParser;
 using System;
+using Microsoft.AspNet.OData.Query;
 using Xunit;
 
 namespace Microsoft.AspNetCore.OData.Authorization.Tests
@@ -75,12 +76,18 @@ namespace Microsoft.AspNetCore.OData.Authorization.Tests
         [InlineData("PUT", "Products(10)/RoutingCustomers(10)", "Product.Update,ProductCustomers.Update")]
         [InlineData("DELETE", "Products(10)/RoutingCustomers(10)", "Product.Update,Customer.Delete")]
         [InlineData("DELETE", "Products(10)/RoutingCustomers(10)", "Product.Update,ProductCustomers.Delete")]
+        // Expanded Properties
+        [InlineData("GET", "Products(10)?$expand=RoutingCustomers", "Product.Read,ProductCustomers.Read")]
+        [InlineData("GET", "Products(10)?$expand=RoutingCustomers($expand=Products)", "Product.Read,ProductCustomers.Read,CustomerProducts.Read")]
+        [InlineData("POST", "Products?$expand=RoutingCustomers", "Product.Insert,ProductCustomers.Read")]
+        [InlineData("PUT", "Products(10)?$expand=RoutingCustomers", "Product.Update,ProductCustomers.Read")]
         public void PermissionEvaluator_ReturnsTrue_IfScopesMatchRequiredPermissions(string method, string endpoint, string userScopes)
         {
+            var parser = new ODataUriParser(_model, new Uri(endpoint, UriKind.Relative), _serviceProvider);
             var path = _parser.Parse(_serviceRoot, endpoint, _serviceProvider);
             var scopesList = userScopes.Split(',');
 
-            var permissionHandler = _model.ExtractPermissionsForRequest(method, path);
+            var permissionHandler = _model.ExtractPermissionsForRequest(method, path, parser.ParseSelectAndExpand());
 
             Assert.True(permissionHandler.AllowsScopes(scopesList));
         }
@@ -90,12 +97,16 @@ namespace Microsoft.AspNetCore.OData.Authorization.Tests
         [InlineData("GET", "Products", "Customers.Read")]
         [InlineData("GET", "Products(10)/RoutingCustomers", "Product.ReadByKey")]
         [InlineData("GET", "Products(10)/RoutingCustomers", "ProductCustomers.Read")]
+        [InlineData("GET", "Products(10)?$expand=RoutingCustomers", "ProductCustomers.Read")]
+        [InlineData("GET", "Products?$expand=RoutingCustomers", "ProductCustomers.Read")]
+        [InlineData("GET", "Products(10)?$expand=RoutingCustomers($expand=Products)", "CustomerProducts.Read")]
         public void PermissionEvaluator_ReturnsFalse_IfRequiredScopesNotFound(string method, string endpoint, string userScopes)
         {
+            var parser = new ODataUriParser(_model, new Uri(endpoint, UriKind.Relative), _serviceProvider);
             var path = _parser.Parse(_serviceRoot, endpoint, _serviceProvider);
             var scopesList = userScopes.Split(',');
 
-            var permissionHandler = _model.ExtractPermissionsForRequest(method, path);
+            var permissionHandler = _model.ExtractPermissionsForRequest(method, path, parser.ParseSelectAndExpand());
 
             Assert.False(permissionHandler.AllowsScopes(scopesList));
         }
