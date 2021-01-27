@@ -7,10 +7,8 @@ tagFormat: "${version}"
 plugins:
   - - "@semantic-release/commit-analyzer"
     - releaseRules: 
-      - type: refactor
-        release: patch
-      - scope: no-release
-        release: false
+      - subject: *
+        type: patch
   - - "@semantic-release/exec"
     - verifyReleaseCmd: |
         # export variable to be used by Codefresh in case of a release
