@@ -8,8 +8,7 @@ plugins:
   - - "@semantic-release/commit-analyzer"
     - releaseRules: 
       - subject: "*"
-        type: patch
-        release: true
+        release: patch
   - - "@semantic-release/exec"
     - verifyReleaseCmd: |
         # export variable to be used by Codefresh in case of a release
