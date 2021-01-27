@@ -7,7 +7,7 @@ tagFormat: "${version}"
 plugins:
   - - "@semantic-release/commit-analyzer"
     - releaseRules: 
-      - subject: *
+      - subject: "*"
         type: patch
   - - "@semantic-release/exec"
     - verifyReleaseCmd: |
