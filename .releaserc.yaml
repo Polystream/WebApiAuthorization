@@ -9,6 +9,7 @@ plugins:
     - releaseRules: 
       - subject: "*"
         type: patch
+        release: true
   - - "@semantic-release/exec"
     - verifyReleaseCmd: |
         # export variable to be used by Codefresh in case of a release
