@@ -55,8 +55,14 @@ namespace Microsoft.AspNetCore.OData.Authorization
             
             if (odataFeature.SelectExpandClause == null)
             {
-                var queryOptions = new ODataQueryOptions(new ODataQueryContext(model, odataFeature.Path.Segments.Last(x=>x.EdmType != null).EdmType.AsElementType(), odataFeature.Path), context.Request);
-                odataFeature.SelectExpandClause = queryOptions.SelectExpand?.SelectExpandClause;
+                var elementType = odataFeature.Path.Segments.LastOrDefault(x => x.EdmType != null);
+                if (elementType != null)
+                {
+                    var queryOptions = new ODataQueryOptions(
+                        new ODataQueryContext(model, elementType.EdmType.AsElementType(), odataFeature.Path),
+                        context.Request);
+                    odataFeature.SelectExpandClause = queryOptions.SelectExpand?.SelectExpandClause;
+                }
             }
 
             var permissions = model.ExtractPermissionsForRequest(context.Request.Method, odataFeature.Path, odataFeature.SelectExpandClause);
