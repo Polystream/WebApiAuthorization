@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.OData.Authorization.Tests.Models
             builder.EntitySet<Destination>("Destinations");
             builder.EntitySet<Incident>("Incidents");
             builder.EntitySet<IncidentGroup>("IncidentGroups");
-            builder.ComplexType<Dog>();
-            builder.ComplexType<Cat>();
+            builder.EntityType<Dog>();
+            builder.EntityType<Cat>();
             builder.EntityType<SpecialProduct>();
             builder.ComplexType<UsAddress>();
 
@@ -46,6 +46,8 @@ namespace Microsoft.AspNetCore.OData.Authorization.Tests.Models
             builder.EntityType<RoutingCustomer>().ComplexProperty<Address>(c => c.Address);
             builder.EntityType<RoutingCustomer>().Action("GetRelatedRoutingCustomers")
                 .ReturnsCollectionFromEntitySet<RoutingCustomer>("RoutingCustomers");
+
+            builder.EntityType<RoutingCustomer>().ContainsOptional(x => x.Pet);
 
             ActionConfiguration getBestRelatedRoutingCustomer = builder.EntityType<RoutingCustomer>()
                 .Action("GetBestRelatedRoutingCustomer");
@@ -285,7 +287,11 @@ namespace Microsoft.AspNetCore.OData.Authorization.Tests.Models
                         new EdmRecordExpression(
                             new EdmPropertyConstructor("NavigationProperty", new EdmNavigationPropertyPathExpression("RoutingCustomers/Products")),
                             new EdmPropertyConstructor("ReadRestrictions", new EdmRecordExpression(
-                                PermissionsHelper.CreatePermissionProperty(new string[] { "CustomerProducts.Read" })))))))));
+                                PermissionsHelper.CreatePermissionProperty(new string[] { "CustomerProducts.Read" })))),
+                        new EdmRecordExpression(
+                            new EdmPropertyConstructor("NavigationProperty", new EdmNavigationPropertyPathExpression("RoutingCustomers/Pet")),
+                            new EdmPropertyConstructor("ReadRestrictions", new EdmRecordExpression(
+                                PermissionsHelper.CreatePermissionProperty(new string[] { "CustomerPet.Read" })))))))));
 
             PermissionsHelper.AddPermissionsTo(model, customers, insertRestrictions, "Customer.Insert");
             PermissionsHelper.AddPermissionsTo(model, customers, deleteRestrictions, "Customer.Delete");

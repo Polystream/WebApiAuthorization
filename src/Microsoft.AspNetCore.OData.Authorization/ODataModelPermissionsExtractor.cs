@@ -443,6 +443,11 @@ namespace Microsoft.AspNetCore.OData.Authorization
 
         private static IScopesEvaluator GetSingletonPropertyOperationPermissions(IEdmVocabularyAnnotatable target, IEdmModel model, string method)
         {
+            if (target == null)
+            {
+                return new DefaultScopesEvaluator();
+            }
+            
             var annotations = target.VocabularyAnnotations(model);
             if (method == "GET")
             {
@@ -458,6 +463,11 @@ namespace Microsoft.AspNetCore.OData.Authorization
 
         private static IScopesEvaluator GetEntityPropertyOperationPermissions(IEdmVocabularyAnnotatable target, IEdmModel model, string method)
         {
+            if (target == null)
+            {
+                return new DefaultScopesEvaluator();
+            }
+            
             var annotations = target.VocabularyAnnotations(model);
             if (method == "GET")
             {
@@ -473,6 +483,11 @@ namespace Microsoft.AspNetCore.OData.Authorization
 
         private static IScopesEvaluator GetNavigationSourceCrudPermissions(IEdmVocabularyAnnotatable target, IEdmModel model, string method)
         {
+            if (target == null)
+            {
+                return new DefaultScopesEvaluator();
+            }
+            
             var annotations = target.VocabularyAnnotations(model);
             if (method == "GET")
             {
@@ -496,6 +511,11 @@ namespace Microsoft.AspNetCore.OData.Authorization
 
         private static IScopesEvaluator GetEntityCrudPermissions(IEdmVocabularyAnnotatable target, IEdmModel model, string method)
         {
+            if (target == null)
+            {
+                return new DefaultScopesEvaluator();
+            }
+            
             var annotations = target.VocabularyAnnotations(model);
 
             if (method == "GET")

@@ -76,6 +76,7 @@ namespace Microsoft.AspNetCore.OData.Authorization.Tests
         [InlineData("PUT", "Products(10)/RoutingCustomers(10)", "Product.Update,ProductCustomers.Update")]
         [InlineData("DELETE", "Products(10)/RoutingCustomers(10)", "Product.Update,Customer.Delete")]
         [InlineData("DELETE", "Products(10)/RoutingCustomers(10)", "Product.Update,ProductCustomers.Delete")]
+        [InlineData("GET", "RoutingCustomers(10)/Pet", "Customer.Read,CustomerPet.Read")]
         // Expanded Properties
         [InlineData("GET", "Products(10)?$expand=RoutingCustomers", "Product.Read,ProductCustomers.Read")]
         [InlineData("GET", "Products(10)?$expand=RoutingCustomers($expand=Products)", "Product.Read,ProductCustomers.Read,CustomerProducts.Read")]
