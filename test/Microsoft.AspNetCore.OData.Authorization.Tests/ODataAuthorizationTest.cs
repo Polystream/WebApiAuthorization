@@ -171,6 +171,9 @@ namespace Microsoft.AspNetCore.OData.Authorization.Tests
         [InlineData("GET", "UnboundFunction", "UnboundFunction", "UnboundFunction")]
         // complex routes requiring ODataRoute attribute
         [InlineData("GET", "Products(10)/RoutingCustomers(20)/Address/Street", "Product.Read,Customer.ReadByKey", "GetProductRoutingCustomerAddressStreet")]
+        // $expand
+        [InlineData("GET", "Products?$expand=RoutingCustomers", "Product.ReadAll,ProductCustomers.Read", "GET Products")]
+        [InlineData("GET", "Products?$expand=RoutingCustomers($expand=Products)", "Product.Read,ProductCustomers.Read,CustomerProducts.Read", "GET Products")]
         public async void ShouldApplyModelPermissionsToEndpoints(string method, string endpoint, string permissions, string expectedResponse)
         {
             var uri = $"http://localhost/odata/{endpoint}";

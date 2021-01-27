@@ -277,6 +277,16 @@ namespace Microsoft.AspNetCore.OData.Authorization.Tests.Models
                     PermissionsHelper.CreatePermissionProperty(new string[] { "Customer.Read", "Customer.ReadAll" }),
                     new EdmPropertyConstructor("ReadByKeyRestrictions", PermissionsHelper.CreatePermission(new[] { "Customer.ReadByKey" })))));
 
+            model.AddVocabularyAnnotation(new EdmVocabularyAnnotation(
+                customers,
+                model.FindTerm(navigationRestrictions),
+                new EdmRecordExpression(
+                    new EdmPropertyConstructor("RestrictedProperties", new EdmCollectionExpression(
+                        new EdmRecordExpression(
+                            new EdmPropertyConstructor("NavigationProperty", new EdmNavigationPropertyPathExpression("RoutingCustomers/Products")),
+                            new EdmPropertyConstructor("ReadRestrictions", new EdmRecordExpression(
+                                PermissionsHelper.CreatePermissionProperty(new string[] { "CustomerProducts.Read" })))))))));
+
             PermissionsHelper.AddPermissionsTo(model, customers, insertRestrictions, "Customer.Insert");
             PermissionsHelper.AddPermissionsTo(model, customers, deleteRestrictions, "Customer.Delete");
             PermissionsHelper.AddPermissionsTo(model, customers, updateRestrictions, "Customer.Update");

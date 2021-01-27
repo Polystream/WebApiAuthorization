@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -9,6 +10,10 @@ using Microsoft.AspNet.OData.Extensions;
 using Microsoft.OData.Edm;
 using Microsoft.AspNetCore.Authorization;
 using System.Diagnostics.Contracts;
+using System.Linq;
+using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Query;
+using Microsoft.OData.UriParser;
 
 namespace Microsoft.AspNetCore.OData.Authorization
 {
@@ -47,8 +52,14 @@ namespace Microsoft.AspNetCore.OData.Authorization
             {
                 return _next(context);
             }
+            
+            if (odataFeature.SelectExpandClause == null)
+            {
+                var queryOptions = new ODataQueryOptions(new ODataQueryContext(model, odataFeature.Path.Segments.Last(x=>x.EdmType != null).EdmType.AsElementType(), odataFeature.Path), context.Request);
+                odataFeature.SelectExpandClause = queryOptions.SelectExpand?.SelectExpandClause;
+            }
 
-            var permissions = model.ExtractPermissionsForRequest(context.Request.Method, odataFeature.Path);
+            var permissions = model.ExtractPermissionsForRequest(context.Request.Method, odataFeature.Path, odataFeature.SelectExpandClause);
             ApplyRestrictions(permissions, context);
 
             return _next(context);
