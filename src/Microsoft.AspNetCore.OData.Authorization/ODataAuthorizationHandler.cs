@@ -47,7 +47,8 @@ namespace Microsoft.AspNetCore.OData.Authorization
         private Task<IEnumerable<string>> DefaultFindScopes(ScopeFinderContext context)
         {
             var claims = context.User?.FindAll("Scope");
-            var scopes = claims?.Select(c => c.Value) ?? Enumerable.Empty<string>();
+            // RFC6749 Section 3.3 specifies that the scope claim is a space-delimited set of strings https://tools.ietf.org/html/rfc6749#section-3.3
+            var scopes = claims?.SelectMany(c => c.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries)) ?? Enumerable.Empty<string>();
             return Task.FromResult(scopes);
         }
     }

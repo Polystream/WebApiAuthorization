@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.OData.Authorization
                             if (item is IEdmRecordExpression restrictedProperty)
                             {
                                 var navigationProperty = restrictedProperty.FindProperty("NavigationProperty").Value as IEdmPathExpression;
-                                if (navigationProperty?.Path == expectedPath)
+                                if (expectedPath.Equals(navigationProperty?.Path, StringComparison.InvariantCultureIgnoreCase))
                                 
                                 {
                                     if (method == "GET")
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.OData.Authorization
                             if (item is IEdmRecordExpression restrictedProperty)
                             {
                                 var navigationProperty = restrictedProperty.FindProperty("NavigationProperty").Value as IEdmPathExpression;
-                                if (navigationProperty?.Path == expectedPath)
+                                if (expectedPath.Equals(navigationProperty?.Path, StringComparison.InvariantCultureIgnoreCase))
 
                                 {
                                     if (method == "GET")
@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.OData.Authorization
                             if (item is IEdmRecordExpression restrictedProperty)
                             {
                                 var navigationProperty = restrictedProperty.FindProperty("NavigationProperty").Value as IEdmPathExpression;
-                                if (navigationProperty?.Path == expectedPath)
+                                if (expectedPath.Equals(navigationProperty?.Path, StringComparison.InvariantCultureIgnoreCase))
                                 {
                                         var readRestrictions = restrictedProperty.FindProperty("ReadRestrictions")?.Value as IEdmRecordExpression;
 
