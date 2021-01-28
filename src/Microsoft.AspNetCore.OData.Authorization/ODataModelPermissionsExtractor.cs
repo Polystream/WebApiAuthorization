@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.OData.Authorization
                                         
                                         if (isTargetByKey)
                                         {
-                                            var readByKeyRestrictions = readRestrictions.FindProperty("ReadByKeyRestrictions")?.Value as IEdmRecordExpression;
+                                            var readByKeyRestrictions = readRestrictions?.FindProperty("ReadByKeyRestrictions")?.Value as IEdmRecordExpression;
                                             var readByKeyPermissions =  ExtractPermissionsFromRecord(readByKeyRestrictions);
                                             evaluator.AddRange(readByKeyPermissions);
                                         }
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.OData.Authorization
 
                                         if (isTargetByKey)
                                         {
-                                            var readByKeyRestrictions = readRestrictions.FindProperty("ReadByKeyRestrictions")?.Value as IEdmRecordExpression;
+                                            var readByKeyRestrictions = readRestrictions?.FindProperty("ReadByKeyRestrictions")?.Value as IEdmRecordExpression;
                                             var readByKeyPermissions = ExtractPermissionsFromRecord(readByKeyRestrictions);
                                             evaluator.AddRange(readByKeyPermissions);
                                         }
@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.OData.Authorization
 
                                         if (isTargetByKey)
                                         {
-                                            var readByKeyRestrictions = readRestrictions.FindProperty("ReadByKeyRestrictions")?.Value as IEdmRecordExpression;
+                                            var readByKeyRestrictions = readRestrictions?.FindProperty("ReadByKeyRestrictions")?.Value as IEdmRecordExpression;
                                             var readByKeyPermissions = ExtractPermissionsFromRecord(readByKeyRestrictions);
                                             evaluator.AddRange(readByKeyPermissions);
                                         }
