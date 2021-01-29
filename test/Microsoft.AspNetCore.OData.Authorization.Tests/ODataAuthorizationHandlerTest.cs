@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OData.Authorization;
 using Xunit;
 
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.OData.Authorization.Tests
             };
             var requirement = new ODataAuthorizationScopesRequirement(permissionData);
             var context = CreateAuthContext("Permission", new[] { requirement }, userScopes);
-            var handler = new ODataAuthorizationHandler(FindScopes);
+            var handler = new ODataAuthorizationHandler(new HttpContextAccessor(), FindScopes);
 
             handler.HandleAsync(context).Wait();
 
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.OData.Authorization.Tests
 
             var requirement = new ODataAuthorizationScopesRequirement(permissionData);
             var context = CreateAuthContext("Scope", new[] { requirement }, userScopes);
-            var handler = new ODataAuthorizationHandler();
+            var handler = new ODataAuthorizationHandler(new HttpContextAccessor());
 
             handler.HandleAsync(context).Wait();
 

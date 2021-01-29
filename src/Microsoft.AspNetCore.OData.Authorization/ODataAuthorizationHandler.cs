@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.OData.Authorization
 {
@@ -14,14 +15,16 @@ namespace Microsoft.AspNetCore.OData.Authorization
     /// </summary>
     internal class ODataAuthorizationHandler : AuthorizationHandler<ODataAuthorizationScopesRequirement>
     {
+        private readonly IHttpContextAccessor _contextAccessor;
         private Func<ScopeFinderContext, Task<IEnumerable<string>>> _scopesFinder;
 
         /// <summary>
         /// Creates an instance of <see cref="ODataAuthorizationHandler"/>.
         /// </summary>
         /// <param name="scopesFinder">User-defined function used to retrieve the current user's scopes from the authorization context</param>
-        public ODataAuthorizationHandler(Func<ScopeFinderContext, Task<IEnumerable<string>>> scopesFinder = null) : base()
+        public ODataAuthorizationHandler(IHttpContextAccessor contextAccessor, Func<ScopeFinderContext, Task<IEnumerable<string>>> scopesFinder = null) : base()
         {
+            _contextAccessor = contextAccessor;
             _scopesFinder = scopesFinder;
         }
 
@@ -34,7 +37,7 @@ namespace Microsoft.AspNetCore.OData.Authorization
         /// <returns></returns>
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, ODataAuthorizationScopesRequirement requirement)
         {
-            var scopeFinderContext = new ScopeFinderContext(context.User);
+            var scopeFinderContext = new ScopeFinderContext(context.User, _contextAccessor.HttpContext);
             var getScopes = _scopesFinder ?? DefaultFindScopes;
             var scopes = await getScopes(scopeFinderContext).ConfigureAwait(false);
 

@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.OData.Authorization
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.OData.Authorization
         {
             var options = new ODataAuthorizationOptions(services);
             configureOptions?.Invoke(options);
-            services.AddSingleton<IAuthorizationHandler, ODataAuthorizationHandler>(_ => new ODataAuthorizationHandler(options.ScopesFinder));
+            services.AddSingleton<IAuthorizationHandler, ODataAuthorizationHandler>(x => new ODataAuthorizationHandler(x.GetService<IHttpContextAccessor>(), options.ScopesFinder));
             
 
             if (!options.AuthenticationConfigured)
