@@ -8,6 +8,7 @@ using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -42,6 +43,7 @@ namespace Microsoft.AspNetCore.OData.Authorization.Tests.Abstractions
             IWebHostBuilder builder = WebHost.CreateDefaultBuilder();
             builder.ConfigureServices(services =>
             {
+                services.AddSingleton<IHttpContextAccessor>(new HttpContextAccessor());
                 services.AddOData();
                 configureService?.Invoke(services);
             });
