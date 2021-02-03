@@ -1,0 +1,20 @@
+branches:
+  - name: master
+  - name: "*"
+    prerelease: true
+tagFormat: "${version}"
+plugins:
+  - - "@semantic-release/commit-analyzer"
+    - releaseRules: 
+      - type: refactor
+        release: patch
+      - scope: no-release
+        release: false
+  - - "@semantic-release/exec"
+    - verifyReleaseCmd: |
+        # export variable to be used by Codefresh in case of a release
+        echo BUILD_IS_RELEASE=true >> /meta/env_vars_to_export
+        # determine the next release number and place it in the codefresh variables volume (equivalent to cf_export)
+        echo BUILD_VERSION_NUMBER=${nextRelease.version} >> /meta/env_vars_to_export
+        # determinate the Assembly version by removing any pre-release from the version and appending the revision 0
+        printf '%s\n' $(echo BUILD_ASSEMBLY_VERSION_NUMBER=${nextRelease.version} | cut -f1 -d"-").0 >> /meta/env_vars_to_export
