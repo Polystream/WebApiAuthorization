@@ -122,23 +122,30 @@ namespace Microsoft.AspNetCore.OData.Authorization
                             continue;
                         }
 
+                        var evaluator = new WithOrScopesCombiner();
+
                         var entitySet = keySegment.NavigationSource as IEdmEntitySet;
                         var permissions =  isPropertyAccess ?
                             GetEntityPropertyOperationPermissions(entitySet, model, method) :
                             GetEntityCrudPermissions(entitySet, model, method);
 
-                        var evaluator = new WithOrScopesCombiner(permissions);
+                        if (!(permissions is DefaultScopesEvaluator))
+                        {
+                            evaluator.Add(permissions);
+                        }
 
                         if (parent is NavigationPropertySegment)
                         {
                             var nestedPermissions = isPropertyAccess ?
                                 GetNavigationPropertyPropertyOperationPermisions(segments, isTargetByKey: true, model, method) :
                                 GetNavigationPropertyCrudPermisions(segments, isTargetByKey: true, model, method);
-
-                            evaluator.Add(nestedPermissions);
+                            
+                            if (!(nestedPermissions is DefaultScopesEvaluator))
+                            {
+                                evaluator.Add(nestedPermissions);
+                            }
                         }
                         
-
                         permissionsChain.Add(evaluator);
                     }
                     else if (segment is NavigationPropertySegment navSegment)
@@ -157,16 +164,25 @@ namespace Microsoft.AspNetCore.OData.Authorization
                             continue;
                         }
 
+                        var segmentEvaluator = new WithOrScopesCombiner();
+
                         var topLevelPermissions = GetNavigationSourceCrudPermissions(navSegment.NavigationSource as IEdmVocabularyAnnotatable, model, method);
-                        var segmentEvaluator = new WithOrScopesCombiner(topLevelPermissions);
+                        if (!(topLevelPermissions is DefaultScopesEvaluator))
+                        {
+                            segmentEvaluator.Add(topLevelPermissions);
+                        }
 
                         var nestedPermissions = GetNavigationPropertyCrudPermisions(
                             segments,
                             isTargetByKey: false,
                             model,
                             method);
-
                         
+                        if (!(nestedPermissions is DefaultScopesEvaluator))
+                        {
+                            segmentEvaluator.Add(nestedPermissions);
+                        }
+
                         segmentEvaluator.Add(nestedPermissions);
                         permissionsChain.Add(segmentEvaluator);
                     }

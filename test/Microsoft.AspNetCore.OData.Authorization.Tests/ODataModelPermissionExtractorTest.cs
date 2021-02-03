@@ -101,6 +101,7 @@ namespace Microsoft.AspNetCore.OData.Authorization.Tests
         [InlineData("GET", "Products(10)?$expand=RoutingCustomers", "ProductCustomers.Read")]
         [InlineData("GET", "Products?$expand=RoutingCustomers", "ProductCustomers.Read")]
         [InlineData("GET", "Products(10)?$expand=RoutingCustomers($expand=Products)", "CustomerProducts.Read")]
+        [InlineData("GET", "RoutingCustomers(10)/Pet", "CustomerPet.Read")]
         public void PermissionEvaluator_ReturnsFalse_IfRequiredScopesNotFound(string method, string endpoint, string userScopes)
         {
             var parser = new ODataUriParser(_model, new Uri(endpoint, UriKind.Relative), _serviceProvider);
