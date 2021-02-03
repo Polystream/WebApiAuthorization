@@ -1,0 +1,113 @@
+version: "1.0"
+stages:
+  - "clone & fetch"
+  - "versioning"
+  - "build"
+  - "push"
+
+steps:
+  main_clone:
+    title: "Cloning repository"
+    type: "git-clone"
+    # Ensure you add the repo name below with your projects repo name
+    repo: "Polystream/WebApiAuthorization"
+    git: "github"
+    stage: "clone & fetch"
+    working_directory: ${{CF_VOLUME_PATH}}
+    revision: "${{CF_BRANCH}}"
+
+  Vault_to_Env:
+    title: Importing vault values
+    type: vault-next-gen
+    arguments:
+      VAULT_ADDR: '${{VAULT_ADDR}}'
+      MOUNT_POINT: 'infrastructure-automation'
+      VAULT_AUTH_METHOD: "APPROLE"
+      APPROLE_SECRET_ID: '${{APPROLE_SECRET_ID}}'
+      APPROLE_ROLE_ID: '${{APPROLE_ROLE_ID}}'
+      SECRETS:
+        - 'API_USER=development/shared:artifactory_user'
+        - 'ARTIFACTORY_TOKEN=development/shared:artifactory_token'
+        - 'FEEDZ_TOKEN=development/shared:feedz_service_acct'
+    stage: "clone & fetch"
+
+  export_access_token:
+    title: Export git access token
+    image: codefresh/cli
+    stage: "versioning"
+    commands:
+      # get git access token used by semantic release plugin to read and write tags to github
+      - cf_export GH_TOKEN=$(codefresh get context github --decrypt -o yaml | yq -r -c .spec.data.auth.password)
+      - cf_export BUILD_VERSION_NUMBER=0.0.0
+      - cf_export BUILD_ASSEMBLY_VERSION_NUMBER=0.0.0
+   # Use the blow to disable Semantic Versioning in your project
+   #when:
+   # condition:
+   #   all:
+   #     semVerSkip: 'includes("${{SEMVER_SKIP}}", "{{SEMVER_SKIP}}") == true'
+   #     semVer: "'${{SEMVER_SKIP}}' == true"
+  semantic_release:
+     image: 'smartive/semantic-release-image'
+     title: "Semantic Release"
+     stage: "versioning"
+     cmd:
+       - semantic-release 
+       - -d
+       - --no-ci # required so that branches that don't follow semver don't break other branches builds
+   # Use the blow to disable Semantic Versioning in your project. Simpl
+   #when:
+   # condition:
+   #   all:
+   #     semVerSkip: 'includes("${{SEMVER_SKIP}}", "{{SEMVER_SKIP}}") == true'
+
+  # This is a known issue when variables passed to typed-steps are no affected from previous cf_export. The bug is that the actual value is been replaced in the cf-api, before the engine. Planned to be fixed on api v2.
+  update_exported_vars_before_passing_to_step_type:
+    image: alpine
+    commands:
+      - cf_export NEW_BUILD_VERSION_NUMBER=${{BUILD_VERSION_NUMBER}}
+      - cf_export NEW_BUILD_ASSEMBLY_VERSION_NUMBER=${{BUILD_ASSEMBLY_VERSION_NUMBER}}
+    stage: "versioning"
+
+  dotnet-build:
+    type: polystream-devops/dotnet-build
+    fail_fast: true
+    arguments:
+      ARTIFACTORY_TOKEN: "${{ARTIFACTORY_TOKEN}}"
+      WORKING_DIR: "${{CF_REPO_NAME}}"	
+      API_USER: "${{API_USER}}"	
+      FEEDZ_TOKEN: "${{FEEDZ_TOKEN}}"	
+      STEP_IMAGE: 'mcr.microsoft.com/dotnet/core/sdk:3.1'
+      # TEST_CMD: "echo no_unit_tests"
+      # PUBLISH: "yes"
+      SLN_FILE_LOCATION: "sln/"
+      EXTRA_ARGS: "-v detailed"
+      BUILD_VERSION: "${{NEW_BUILD_VERSION_NUMBER}}"
+      BUILD_ASSEMBLY_VERSION: "${{NEW_BUILD_ASSEMBLY_VERSION_NUMBER}}"
+    stage: "build"
+
+  dotnet-push:
+    type: polystream-devops/dotnet-push
+    fail_fast: true
+    arguments:
+      ARTIFACTORY_TOKEN: "${{ARTIFACTORY_TOKEN}}"
+      WORKING_DIR: "${{CF_REPO_NAME}}"	
+      API_USER: "${{API_USER}}"	
+      FEEDZ_TOKEN: "${{FEEDZ_TOKEN}}"
+      BUILD_VERSION: "${{NEW_BUILD_VERSION_NUMBER}}"
+      STEP_IMAGE: 'mcr.microsoft.com/dotnet/core/sdk:3.1'	
+    stage: "publish"
+    when:
+      condition:
+        any:
+          isRelease: '"${{BUILD_IS_RELEASE}}" == "true"'
+
+  semantic_release_tag:
+     image: 'smartive/semantic-release-image'
+     title: "Push release tag"
+     stage: "push"
+     cmd:
+       - semantic-release 
+     when:
+       condition:
+         any:
+           isRelease: '"${{BUILD_IS_RELEASE}}" == "true"'
