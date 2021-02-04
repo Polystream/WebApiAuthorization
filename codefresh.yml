@@ -95,6 +95,7 @@ steps:
       FEEDZ_TOKEN: "${{FEEDZ_TOKEN}}"
       BUILD_VERSION: "${{NEW_BUILD_VERSION_NUMBER}}"
       STEP_IMAGE: 'mcr.microsoft.com/dotnet/core/sdk:3.1'	
+      SLN_FILE_LOCATION: "sln/"
     stage: "publish"
     when:
       condition:
